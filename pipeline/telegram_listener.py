@@ -1,3 +1,4 @@
+from signal_buffer import is_duplicate
 import asyncio
 import json
 import os
@@ -220,4 +221,5 @@ async def main():
     print('Telegram listener v2 started — watching AJD Trades V2')
     await client.run_until_disconnected()
 
-asyncio.run(main())
+if __name__ == "__main__":
+    asyncio.run(main())
