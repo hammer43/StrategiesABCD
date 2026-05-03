@@ -1,0 +1,6 @@
+telethon
+xgboost
+scikit-learn
+numpy
+websocket-client
+requests
