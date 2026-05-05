@@ -390,6 +390,14 @@ async def handler(event):
         )
         return
 
+    # Minimum RR filter
+    entry = round(signal["zone_top"] + ENTRY_BUFFER, 2)
+    tp1_pips = round((signal["adj_tp1"] - entry) * 10, 1)
+    sl_pips = round((entry - signal["adj_sl"]) * 10, 1)
+    rr = round(tp1_pips / sl_pips, 2) if sl_pips > 0 else 0
+    if rr < 0.35:
+        send_telegram(f'[{LABEL}] SKIP low RR {rr}\nZone: {signal["zone_bot"]}-{signal["zone_top"]}')
+        return
     # Set pending
     account['pending'] = signal
     save_state()

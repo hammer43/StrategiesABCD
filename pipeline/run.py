@@ -3,6 +3,10 @@ import sys
 import os
 import time
 
+# Clear queue on startup
+open("/root/gold-signals/pipeline/signal_queue.json", "w").write("[]")
+print("Queue cleared")
+
 scripts = [
     '/root/gold-signals/pipeline/candle_daemon.py',
     '/root/gold-signals/pipeline/telegram_listener.py',

@@ -1,3 +1,7 @@
+import time
+last_alert_time = 0
+ALERT_COOLDOWN = 180
+
 import asyncio
 from session_filter import get_session_info
 import json
@@ -308,7 +312,7 @@ async def signal_processor():
         except Exception as e:
             print(f'Signal processor error: {e}')
 
-        await asyncio.sleep(1)
+        await asyncio.sleep(5)
 
 # ── PRICE MONITOR ────────────────────────────────────────
 async def price_monitor():
@@ -318,7 +322,7 @@ async def price_monitor():
         try:
             pdata = get_price()
             if not pdata or not pdata.get('price'):
-                await asyncio.sleep(1)
+                await asyncio.sleep(5)
                 continue
 
             price     = pdata['price']
@@ -332,11 +336,11 @@ async def price_monitor():
 
                 # TP1 already hit
                 if price >= p['tp1']:
-                    send_telegram(f'[{LABEL}] ⚠️ CANCELLED\n'
-                                  f'TP1 {p["tp1"]} already hit\n'
-                                  f'Price: {price} — trap avoided ✓')
+                    print("SILENT CANCEL: TP1 already hit")
                     account['pending'] = None
                     filled_layers.clear()
+                    processed_times.add(p.get("time",""))
+                    save_processed()
                     save_state()
 
                 else:
@@ -381,10 +385,16 @@ async def price_monitor():
 
                 # SL hit
                 if price <= trade['sl']:
-                    loss = round(trade['sl_pips'] * PIP_VALUE, 2)
-                    account['balance'] -= loss
-                    account['total_losses'] += 1
-                    trade['status']    = 'loss'
+                    is_be = trade.get('tp1_hit', False)
+                    if is_be:
+                        loss = 0.0
+                        account['total_breakeven'] = account.get('total_breakeven', 0) + 1
+                        trade['status'] = 'breakeven'
+                    else:
+                        loss = round(trade['sl_pips'] * PIP_VALUE, 2)
+                        account['balance'] -= loss
+                        account['total_losses'] += 1
+                        trade['status'] = 'loss'
                     trade['exit']      = price
                     trade['pnl']       = -loss
                     trade['time_exit'] = datetime.now(timezone.utc).isoformat()
@@ -445,7 +455,7 @@ async def price_monitor():
         except Exception as e:
             print(f'Price monitor error: {e}')
 
-        await asyncio.sleep(1)
+        await asyncio.sleep(5)
 
 # ── DAILY REPORT ─────────────────────────────────────────
 async def daily_report():
