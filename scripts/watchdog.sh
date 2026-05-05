@@ -18,26 +18,5 @@ while true; do
         fi
     done
 
-    # Check price feed freshness
-    PRICE_AGE=$(python3 -c "
-import json, os
-from datetime import datetime, timezone
-try:
-    d = json.load(open('/root/gold-signals/pipeline/price.json'))
-    last = datetime.fromisoformat(d['last_update'])
-    if last.tzinfo is None:
-        last = last.replace(tzinfo=timezone.utc)
-    age = (datetime.now(timezone.utc) - last).total_seconds()
-    print(int(age))
-except:
-    print(9999)
-" 2>/dev/null)
-
-    if [ "$PRICE_AGE" -gt 300 ] 2>/dev/null; then
-        echo "Price feed stale (${PRICE_AGE}s) - restarting pipeline"
-        /root/gold-signals/scripts/restart.sh
-        curl -s "https://api.telegram.org/bot8680392041:AAFKpVrYzWHQrR-4_-BbmA-eWIC6BV4Zp8s/sendMessage?chat_id=1273237796&text=⚠️+Price+feed+stale+restarted"
-    fi
-
-    sleep 300
+    sleep 600
 done
