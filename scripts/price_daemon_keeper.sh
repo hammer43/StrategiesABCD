@@ -7,5 +7,5 @@ while true; do
         python3 price_daemon.py &
         curl -s "https://api.telegram.org/bot8680392041:AAFKpVrYzWHQrR-4_-BbmA-eWIC6BV4Zp8s/sendMessage?chat_id=1273237796&text=⚠️+Price+daemon+restarted"
     fi
-    sleep 60
+    sleep 15
 done
