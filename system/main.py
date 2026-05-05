@@ -37,7 +37,6 @@ IGNORE_KEYWORDS = [
     'RISK FREE', 'SL TO BE', 'CLOSE +', 'SECURING',
     'PARTIAL', 'TP1 HIT', 'TP2 HIT', 'TP3 HIT',
     'SL HIT', 'BREAKEVEN', 'MOVE SL', 'LOCKED IN',
-    'TRAILING', 'AT YOUR OWN RISK', 'PIPS',
     'RECAP', 'TRADERS', 'PERFECT', 'INSANE',
     'PREPARING', 'WELL DONE', 'WHO HELD',
 ]
@@ -351,7 +350,7 @@ async def handler(event):
         return
 
     # Only process BUY signals
-    if not (('BUY GOLD' in upper or 'BUY XAUUSD' in upper) and 'SL' in upper and 'TP' in upper):
+    if not (('BUY GOLD' in upper or 'BUY XAUUSD' in upper or 'BUY LIMITS' in upper) and 'SL' in upper and 'TP' in upper):
         return
 
     # Parse signal
@@ -363,7 +362,8 @@ async def handler(event):
     if score_signal:
         result = score_signal(signal)
         conf   = result['confidence']
-        if conf < ML_THRESHOLD:
+        threshold = 50 if signal.get("out_of_office") else ML_THRESHOLD
+        if conf < threshold:
             send_telegram(
                 f'[{LABEL}] SKIP {conf}%\n'
                 f'Zone: {signal["zone_bot"]}-{signal["zone_top"]}'
