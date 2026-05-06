@@ -208,6 +208,7 @@ async def price_monitor():
     engine = PriceEngine()
     engine.start()
     await asyncio.sleep(3)
+    prev_price = None
 
     while True:
         try:
@@ -231,11 +232,17 @@ async def price_monitor():
                     account['pending'] = None
                     save_state()
 
-                # Fill if price at entry
+                # Fill if price at entry (drop to zone)
                 elif price <= entry + 0.15:
                     open_trade(p)
                     account['pending'] = None
                     save_state()
+                # Fill if price crosses entry going up
+                elif prev_price is not None and prev_price < entry and price >= entry:
+                    if price < p['adj_tp1'] and price > p['adj_sl']:
+                        open_trade(p)
+                        account['pending'] = None
+                        save_state()
 
             # Monitor open trades
             for trade in open_trades:
@@ -283,6 +290,7 @@ async def price_monitor():
         except Exception as e:
             print(f'Price monitor error: {e}')
 
+        prev_price = price
         await asyncio.sleep(1)
 
 # ── DAILY REPORT ──────────────────────────────────────────

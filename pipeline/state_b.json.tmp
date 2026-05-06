@@ -1,33 +1,33 @@
 {
-  "balance": 5070.299999999999,
+  "balance": 5109.589999999999,
   "starting": 5000.0,
   "pending": {
-    "type": "buy_limit",
+    "type": "buy",
     "direction": "BUY",
-    "zone_top": 4547.0,
-    "zone_bot": 4541.0,
-    "zone_width": 6.0,
-    "zone_70pct": 4545.2,
-    "fill_trigger": 4547.15,
-    "tp1": 4550.0,
-    "tp2": 4554.0,
-    "tp3": 4559.0,
-    "sl": 4540.0,
-    "high_risk": true,
+    "zone_top": 4677.0,
+    "zone_bot": 4673.0,
+    "zone_width": 4.0,
+    "zone_70pct": 4675.8,
+    "fill_trigger": 4677.15,
+    "tp1": 4679.0,
+    "tp2": 4682.0,
+    "tp3": 4686.0,
+    "sl": 4672.0,
+    "high_risk": false,
     "out_of_office": false,
-    "time": "2026-05-05T20:38:10+00:00",
+    "time": "2026-05-06T08:46:04+00:00",
     "age_seconds": 1,
     "stale": false,
     "processed": false,
     "cancelled": false,
     "entries": [
       {
-        "price": 4546.9,
+        "price": 4676.9,
         "risk": 25.0,
         "label": "L1"
       },
       {
-        "price": 4545.2,
+        "price": 4676.0,
         "risk": 25.0,
         "label": "L2"
       }
