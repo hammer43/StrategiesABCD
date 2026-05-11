@@ -15,7 +15,7 @@ from credentials import API_ID, API_HASH, BOT_TOKEN, CHAT_ID, CHANNEL_ID
 BASE_DIR    = '/root/gold-signals/system'
 STATE_FILE  = f'{BASE_DIR}/state_a_v3.json'
 TRADES_FILE = f'{BASE_DIR}/trades_a_v3.json'
-SESSION     = f'{BASE_DIR}/gold_session_a'
+SESSION     = f'{BASE_DIR}/gold_session_v3'
 MODEL_FILE  = f'{BASE_DIR}/model.pkl'
 
 # ── CONSTANTS ─────────────────────────────────────────────
