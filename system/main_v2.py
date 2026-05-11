@@ -34,9 +34,9 @@ SKIP_HOURS = {16, 22, 23, 0, 1, 2, 3, 4}
 
 # ── IGNORE KEYWORDS ──────────────────────────────────────
 IGNORE_KEYWORDS = [
-    'CLOSE +', 'SECURING',
+    'RISK FREE', 'SL TO BE', 'CLOSE +', 'SECURING',
     'PARTIAL', 'TP1 HIT', 'TP2 HIT', 'TP3 HIT',
-    'SL HIT', 'BREAKEVEN', 'LOCKED IN',
+    'SL HIT', 'BREAKEVEN', 'MOVE SL', 'LOCKED IN',
     'RECAP', 'TRADERS', 'PERFECT', 'INSANE',
     'PREPARING', 'WELL DONE', 'WHO HELD',
 ]
@@ -351,21 +351,6 @@ async def handler(event):
             account['pending'] = None
             save_state()
             send_telegram(f'[{LABEL}] CANCELLED by signaller')
-        return
-
-    # SL management messages
-    sl_mgmt_keywords = ['RISK FREE', 'MOVE SL', 'SL TO BE', 'SL TO']
-    if any(kw in upper for kw in sl_mgmt_keywords):
-        # Extract new SL level
-        sl_match = re.search(r'(RISK FREE|MOVE SL|SL TO BE?)\s*[\@\-\s]?\s*(\d{4}\.?\d*)', upper)
-        if sl_match and open_trades:
-            new_sl = float(sl_match.group(2))
-            for trade in open_trades:
-                if trade['status'] == 'open' and new_sl > trade['sl']:
-                    trade['sl'] = new_sl
-                    save_trade(trade)
-                    print(f'SL moved to {new_sl} for {trade["id"]}')
-            send_telegram(f'[{LABEL}] SL managed → {new_sl}')
         return
 
     # Ignore management messages

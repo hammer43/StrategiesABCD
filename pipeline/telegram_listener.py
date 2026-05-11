@@ -65,6 +65,8 @@ def classify_message(text):
         return 'buy'
     if any(kw in upper for kw in SELL_KEYWORDS) and 'SL' in upper and 'TP' in upper:
         return 'sell'
+    if any(kw in upper for kw in ['RISK FREE', 'MOVE SL', 'SL TO BE', 'SL TO']) and any(c.isdigit() for c in text):
+        return 'sl_manage'
     return 'ignore'
 
 def parse_signal(text, msg_type, msg_time, age_seconds):
@@ -196,6 +198,20 @@ async def handler(event):
             'processed': False
         })
         save_queue(queue)
+        return
+
+    if msg_type == 'sl_manage':
+        import re as _re
+        sl_match = _re.search(r'(\d{4}\.?\d*)', text)
+        if sl_match:
+            queue = load_queue()
+            queue.append({
+                'type': 'sl_manage',
+                'new_sl': float(sl_match.group(1)),
+                'time': msg_time,
+                'processed': False
+            })
+            save_queue(queue)
         return
 
     signal = parse_signal(text, msg_type, msg_time, age_seconds)

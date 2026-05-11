@@ -13,7 +13,8 @@ scripts = [
     '/root/gold-signals/pipeline/price_daemon.py',
     '/root/gold-signals/pipeline/strategy_b.py',
     '/root/gold-signals/pipeline/strategy_c.py',
-    '/root/gold-signals/pipeline/strategy_d.py'
+    '/root/gold-signals/pipeline/strategy_d.py',
+    '/root/gold-signals/pipeline/strategy_b_v2_fm.py'
 ]
 
 processes = []
