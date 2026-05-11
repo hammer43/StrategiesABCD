@@ -1,0 +1,31 @@
+{
+  "balance": 5158.46,
+  "starting": 5000.0,
+  "pending": {
+    "type": "buy",
+    "direction": "BUY",
+    "zone_top": 4715.0,
+    "zone_bot": 4709.0,
+    "zone_width": 6.0,
+    "zone_70pct": 4713.2,
+    "fill_trigger": 4715.15,
+    "tp1": 4718.0,
+    "tp2": 4722.0,
+    "tp3": 4727.0,
+    "sl": 4708.0,
+    "high_risk": false,
+    "out_of_office": false,
+    "time": "2026-05-11T14:32:22+00:00",
+    "age_seconds": 1,
+    "stale": false,
+    "processed": false,
+    "cancelled": false,
+    "entries": [
+      {
+        "price": 4714.9,
+        "risk": 50.0,
+        "label": "L1"
+      }
+    ],
+    "score": {
+      "confidence": 

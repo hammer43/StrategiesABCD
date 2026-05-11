@@ -270,6 +270,23 @@ async def price_monitor():
                     account['pending'] = None
                     save_state()
 
+                zone_bot = p.get('zone_bot', entry)
+                zone_top = p.get('zone_top', entry)
+
+                # Sweep detection — enter on bounce
+                if not p.get('swept') and price < zone_bot:
+                    p['swept'] = True
+                    p['sweep_low'] = price
+                    p['adj_sl'] = round(price - 1.0, 2)
+                    account['pending'] = p
+                    save_state()
+                    print(f'Sweep at {price} SL->{p["adj_sl"]}')
+                elif p.get('swept') and prev_price is not None and prev_price < zone_bot and price >= zone_bot:
+                    if price < p['adj_tp1']:
+                        p['entry'] = round(zone_bot + 0.15, 2)
+                        open_trade(p, force_mult)
+                        account['pending'] = None
+                        save_state()
                 # Fill if price drops to entry zone
                 elif price <= entry + 0.15:
                     open_trade(p, force_mult)
