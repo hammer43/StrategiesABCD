@@ -187,6 +187,7 @@ async def signal_processor():
             processed_times = set(json.load(open(PROCESSED_FILE)))
         except:
             pass
+    zone_cooldowns = {}  # zone_top -> timestamp of last SL hit
 
     def save_processed():
         tmp = PROCESSED_FILE + '.tmp'
@@ -251,6 +252,15 @@ async def signal_processor():
                 if signal.get('direction') != 'BUY':
                     processed_times.add(signal["time"])
                     save_processed()
+                    continue
+
+                # Zone cooldown check — skip if SL hit in same zone in last 30 mins
+                zone_key = round(signal.get('zone_top', 0))
+                cooldown_time = zone_cooldowns.get(zone_key, 0)
+                if datetime.now(timezone.utc).timestamp() - cooldown_time < 1800:
+                    processed_times.add(signal.get('time',''))
+                    save_processed()
+                    send_telegram(f'[{LABEL}] ZONE COOLDOWN {signal["zone_top"]} — skipping')
                     continue
 
                 # Score signal

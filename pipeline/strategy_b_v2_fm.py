@@ -227,6 +227,7 @@ async def signal_processor():
             processed_times = set(json.load(open(PROCESSED_FILE)))
         except:
             pass
+    zone_cooldowns = {}  # zone_top -> timestamp of last SL hit
 
     def save_processed():
         tmp = PROCESSED_FILE + '.tmp'
@@ -296,6 +297,13 @@ async def signal_processor():
                     continue
 
                 # ML score
+                zone_key = round(signal.get("zone_top", 0))
+                cooldown_time = zone_cooldowns.get(zone_key, 0)
+                if datetime.now(timezone.utc).timestamp() - cooldown_time < 1800:
+                    processed_times.add(signal.get("time",""))
+                    save_processed()
+                    send_telegram(f"[{LABEL}] ZONE COOLDOWN {signal["zone_top"]} — skipping")
+                    continue
                 score = score_signal(signal)
                 if score['action'] == 'SKIP':
                     send_telegram(
@@ -485,6 +493,8 @@ async def price_monitor():
                     trade['time_exit'] = datetime.now(timezone.utc).isoformat()
                     save_trade(trade)
                     save_state()
+                    zone_key = round(trade.get("entry", 0))
+                    zone_cooldowns[zone_key] = datetime.now(timezone.utc).timestamp()
                     wr = round(
                         account['total_wins'] / (account['total_wins'] + account['total_losses']) * 100, 1
                     ) if (account['total_wins'] + account['total_losses']) > 0 else 0
