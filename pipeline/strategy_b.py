@@ -219,6 +219,35 @@ async def signal_processor():
                     processed_times.add(signal["time"])
                     save_processed()
                     continue
+                if signal.get('type') == 'exit_all':
+                    pdata = get_price()
+                    price = pdata["price"] if pdata else 0
+                    for trade in open_trades:
+                        if trade["status"] == "open" and price:
+                            pips = round((price - trade["entry"]) * 10, 1)
+                            pnl = round(pips * PIP_VALUE, 2)
+                            account["balance"] += pnl
+                            trade["status"] = "closed"
+                            trade["pnl"] = pnl
+                            trade["exit"] = price
+                            trade["time_exit"] = datetime.now(timezone.utc).isoformat()
+                            save_trade(trade)
+                    save_state()
+                    send_telegram(f"[{LABEL}] EXIT ALL at {price}")
+                    processed_times.add(signal.get("time",""))
+                    save_processed()
+                    continue
+                if signal.get('type') == 'sl_manage':
+                    new_sl = signal.get("new_sl")
+                    if new_sl:
+                        for trade in open_trades:
+                            if trade["status"] == "open" and new_sl > trade["sl"]:
+                                trade["sl"] = new_sl
+                                save_trade(trade)
+                        send_telegram(f"[{LABEL}] SL -> {new_sl}")
+                    processed_times.add(signal.get("time",""))
+                    save_processed()
+                    continue
                 if signal.get('direction') != 'BUY':
                     processed_times.add(signal["time"])
                     save_processed()

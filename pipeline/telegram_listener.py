@@ -67,6 +67,8 @@ def classify_message(text):
         return 'sell'
     if any(kw in upper for kw in ['RISK FREE', 'MOVE SL', 'SL TO BE', 'SL TO']) and any(c.isdigit() for c in text):
         return 'sl_manage'
+    if any(kw in upper for kw in ['OUT AT ENTRY', 'OUT AT BREAKEVEN', 'CLOSED ALL', 'EXIT ALL', 'OUT OF ALL']):
+        return 'exit_all'
     return 'ignore'
 
 def parse_signal(text, msg_type, msg_time, age_seconds):
@@ -194,6 +196,17 @@ async def handler(event):
             'type': 'prepare',
             'time': msg_time,
             'age_seconds': age_seconds,
+            'text': text,
+            'processed': False
+        })
+        save_queue(queue)
+        return
+
+    if msg_type == 'exit_all':
+        queue = load_queue()
+        queue.append({
+            'type': 'exit_all',
+            'time': msg_time,
             'text': text,
             'processed': False
         })
