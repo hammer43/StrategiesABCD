@@ -399,13 +399,13 @@ async def price_monitor():
                                 save_state()
                             # Normal fill — price drops to target
                             elif price <= target + FILL_BUFFER:
-                                open_trade(entry_info, p, 'limit_drop')
                                 filled_layers.add(eid)
+                                open_trade(entry_info, p, "limit_drop")
 
                         elif entry_dir == 'wait_rise':
                             if price >= target and direction == 'up':
-                                open_trade(entry_info, p, 'bounce_rise')
                                 filled_layers.add(eid)
+                                open_trade(entry_info, p, "bounce_rise")
 
                     # All layers filled
                     all_filled = all(
