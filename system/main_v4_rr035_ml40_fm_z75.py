@@ -310,7 +310,8 @@ async def price_monitor():
 
                 # SL hit
                 if price <= trade['sl']:
-                    loss = round(trade['sl_pips'] * pip_value, 2)
+                    loss = round((trade['entry'] - price) * lots * 100, 2)
+                    loss = max(loss, 0)  # never negative loss
                     account['balance']      -= loss
                     account['total_losses'] += 1
                     trade['status']    = 'loss'
