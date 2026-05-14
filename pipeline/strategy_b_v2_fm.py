@@ -267,9 +267,10 @@ async def signal_processor():
                     if new_sl:
                         for trade in open_trades:
                             if trade['status'] == 'open' and new_sl > trade['sl']:
-                                trade['sl'] = new_sl
+                                safe_sl = min(new_sl, trade['entry'] + 0.1)
+                                trade['sl'] = safe_sl
                                 save_trade(trade)
-                        send_telegram(f'[{LABEL}] SL → {new_sl}')
+                        send_telegram(f'[{LABEL}] SL → breakeven')
                     processed_times.add(signal['time'])
                     save_processed()
                     continue

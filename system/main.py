@@ -252,7 +252,7 @@ async def price_monitor():
                 # SL hit
                 if price <= trade['sl']:
                     lots = trade.get('lots', LOT_SIZE)
-                    loss = round((trade['entry'] - price) * lots * 100, 2)
+                    loss = round((trade["entry"] - price) * lots * 100, 2)
                     loss = max(loss, 0)
                     account['balance']      -= loss
                     account['total_losses'] += 1
@@ -364,10 +364,12 @@ async def handler(event):
             new_sl = float(sl_match.group(2))
             for trade in open_trades:
                 if trade['status'] == 'open' and new_sl > trade['sl']:
-                    trade['sl'] = new_sl
+                    # Cap at breakeven to protect our entry
+                    safe_sl = min(new_sl, trade['entry'] + 0.1)
+                    trade['sl'] = safe_sl
                     save_trade(trade)
-                    print(f'SL moved to {new_sl} for {trade["id"]}')
-            send_telegram(f'[{LABEL}] SL managed → {new_sl}')
+                    print(f'SL moved to {safe_sl} for {trade["id"]}')
+            send_telegram(f'[{LABEL}] SL → breakeven {round(open_trades[0]["entry"]+0.1,2) if open_trades else new_sl}')
         return
 
     # Ignore management messages
