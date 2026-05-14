@@ -241,15 +241,13 @@ def open_trade(signal, force_mult=1.0):
 
 # ── PRICE MONITOR ─────────────────────────────────────────
 async def price_monitor():
-    from price_engine import PriceEngine
-    engine = PriceEngine()
-    engine.start()
-    await asyncio.sleep(3)
+    import json as _json
     prev_price = None
 
     while True:
         try:
-            price = engine.current_price
+            pdata = _json.load(open('/root/gold-signals/pipeline/price.json'))
+            price = pdata.get('price')
             if not price:
                 await asyncio.sleep(1)
                 continue
