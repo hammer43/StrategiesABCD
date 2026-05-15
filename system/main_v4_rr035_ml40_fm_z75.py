@@ -514,6 +514,22 @@ async def handler(event):
     force_mult, mult_reason = get_force_multiplier(conf)
     signal['force_mult'] = force_mult
 
+    # Pre-entry candle validation
+    try:
+        import json as _j, datetime as _dt
+        c1m = _j.load(open("/root/gold-signals/pipeline/candles/1m.json"))
+        from datetime import timezone as _tz, timedelta as _td
+        st = _dt.datetime.fromisoformat(signal["time"].replace("Z","+00:00"))
+        rc = [c for c in c1m if _dt.datetime.strptime(c["datetime"],"%Y-%m-%d %H:%M:%S").replace(tzinfo=_tz.utc) >= st - _td(minutes=1)]
+        if rc:
+            if max(c["high"] for c in rc) >= signal.get("adj_tp1",9999):
+                send_telegram(f'[{LABEL}] SKIP TP1 hit on 1m candle')
+                return
+            if min(c["low"] for c in rc) <= signal.get("adj_sl",0):
+                send_telegram(f'[{LABEL}] SKIP SL violated on 1m candle')
+                return
+    except Exception as _e:
+        print(f"Candle validation error: {_e}")
     # Set pending
     account['pending'] = signal
     save_state()
