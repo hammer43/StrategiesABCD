@@ -158,7 +158,7 @@ def parse_signal(text):
             'sl':        sl_val,
             'high_risk': 'HIGH RISK' in upper,
             'entry':     round(zone_bot + (zone_top - zone_bot) * 0.50 + ENTRY_BUFFER, 2),
-            'adj_sl':    round(sl_val - SL_BUFFER, 2),
+            'adj_sl':    round(zone_bot - 1.0, 2),
             'adj_tp1':   round(tp_list[0] - TP1_BUFFER, 2),
             'adj_tp2':   round(tp_list[1] - TP1_BUFFER, 2) if len(tp_list) > 1 else None,
         }
@@ -512,8 +512,26 @@ async def handler(event):
 
     # ── FORCE MULTIPLIER ─────────────────────────────────
     force_mult, mult_reason = get_force_multiplier(conf)
+    if signal.get("high_risk"):
+        force_mult = min(force_mult, 1.0)
+        mult_reason += " (HIGH RISK capped)"
     signal['force_mult'] = force_mult
 
+    # EMA20 filter — only enter if price above EMA20
+    try:
+        import json as _ej
+        c1h = _ej.load(open("/root/gold-signals/pipeline/candles/1h.json"))
+        closes_1h = [c["close"] for c in c1h]
+        k = 2/21
+        ema20 = sum(closes_1h[:20])/20
+        for p in closes_1h[20:]: ema20 = p*k + ema20*(1-k)
+        ema20 = round(ema20, 2)
+        entry = signal.get("entry", 0)
+        if entry < ema20:
+            send_telegram(f'[{LABEL}] SKIP — below EMA20 {ema20}')
+            return
+    except Exception as _ee:
+        print(f"EMA filter error: {_ee}")
     # Pre-entry candle validation
     try:
         import json as _j, datetime as _dt
