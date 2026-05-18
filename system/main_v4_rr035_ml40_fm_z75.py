@@ -309,8 +309,10 @@ async def price_monitor():
                 # SL hit
                 if price <= trade['sl']:
                     lots = trade.get("lots", LOT_SIZE)
-                    loss = round((trade["entry"] - price) * lots * 100, 2)
-                    loss = max(loss, 0)  # never negative loss
+                    # After TP1 hit use SL as reference (breakeven protection)
+                    ref_price = trade['sl'] if trade.get('tp1_hit') else trade['entry']
+                    loss = round((ref_price - price) * lots * 100, 2)
+                    loss = max(loss, 0)
                     account['balance']      -= loss
                     account['total_losses'] += 1
                     trade['status']    = 'loss'

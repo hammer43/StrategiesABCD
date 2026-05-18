@@ -486,7 +486,8 @@ async def price_monitor():
                         trade['status'] = 'breakeven'
                     else:
                         lots = trade.get('lots', LOT_SIZE)
-                        loss = round((trade['entry'] - price) * lots * 100, 2)
+                        ref_price = trade['sl'] if trade.get('tp1_hit') else trade['entry']
+                        loss = round((ref_price - price) * lots * 100, 2)
                         loss = max(loss, 0)
                         account['balance'] -= loss
                         account['total_losses'] += 1
