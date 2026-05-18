@@ -158,7 +158,7 @@ def parse_signal(text):
             'sl':        sl_val,
             'high_risk': 'HIGH RISK' in upper,
             'entry':     round(zone_bot + (zone_top - zone_bot) * 0.75 + ENTRY_BUFFER, 2),
-            'adj_sl':    round(sl_val - SL_BUFFER, 2),
+            'adj_sl':    round(zone_bot - 1.0, 2),
             'adj_tp1':   round(tp_list[0] - TP1_BUFFER, 2),
             'adj_tp2':   round(tp_list[1] - TP1_BUFFER, 2) if len(tp_list) > 1 else None,
         }
