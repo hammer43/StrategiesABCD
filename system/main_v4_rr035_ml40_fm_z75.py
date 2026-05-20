@@ -534,6 +534,7 @@ async def handler(event):
             return
     except Exception as _ee:
         print(f"EMA filter error: {_ee}")
+        return  # skip on error
     # Pre-entry candle validation
     try:
         import json as _j, datetime as _dt
