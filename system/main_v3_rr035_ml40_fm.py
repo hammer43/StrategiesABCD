@@ -307,6 +307,51 @@ async def price_monitor():
                 pip_value = trade.get('pip_value', LOT_SIZE * 10)
 
                 # SL hit
+                # Candle-based recovery: was TP1 actually hit before this SL breach?
+                if not trade.get('tp1_hit') and price <= trade['sl']:
+                    try:
+                        import json as _cj
+                        from datetime import datetime as _cdt, timezone as _ctz
+                        c1m = _cj.load(open('/root/gold-signals/pipeline/candles/1m.json'))
+                        et = _cdt.fromisoformat(trade['time_entry'])
+                        if et.tzinfo is None:
+                            et = et.replace(tzinfo=_ctz.utc)
+                        rc = [c for c in c1m if _cdt.strptime(c['datetime'], '%Y-%m-%d %H:%M:%S').replace(tzinfo=_ctz.utc) >= et]
+                        rc.sort(key=lambda c: c['datetime'])
+                        tp1_first = False
+                        for c in rc:
+                            hit_tp1 = c['high'] >= trade['tp1']
+                            hit_sl  = c['low']  <= trade['sl']
+                            if hit_tp1 and hit_sl:
+                                if c['close'] < c['open']:
+                                    tp1_first = True
+                                break
+                            elif hit_tp1:
+                                tp1_first = True
+                                break
+                            elif hit_sl:
+                                tp1_first = False
+                                break
+                        if tp1_first:
+                            pips   = round((trade['tp1'] - trade['entry']) * 10, 1)
+                            profit = round(pips * pip_value * 0.5, 2)
+                            account['balance']    += profit
+                            account['total_wins'] += 1
+                            trade['tp1_hit']   = True
+                            trade['tp1_closed'] = True
+                            trade['sl']        = round(trade['entry'] + 0.1, 2)
+                            trade['pnl']      = trade.get('pnl', 0) + profit
+                            save_trade(trade)
+                            save_state()
+                            send_telegram(
+                                f'[{LABEL}] TP1 50% (candle-recovered) - {trade["id"]}\n'
+                                f'+{pips} pips | +${profit}\n'
+                                f'SL -> Breakeven+ {trade["sl"]}\n'
+                                f'Balance: ${round(account["balance"], 2)}'
+                            )
+                            continue
+                    except Exception as _ce:
+                        print(f'Candle recovery error: {_ce}')
                 if price <= trade['sl']:
                     lots = trade.get("lots", LOT_SIZE)
                     # After TP1 hit use SL as reference (breakeven protection)
