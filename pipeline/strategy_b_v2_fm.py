@@ -334,11 +334,17 @@ async def signal_processor():
                 if account.get('pending'):
                     old = account['pending']
                     if price and abs(price - old['zone_top']) > 15:
+                        if abs(signal["zone_top"] - old["zone_top"]) < 3:
+                            processed_times.add(signal.get("time",""))
+                            save_processed()
+                            mark_processed(signal["time"])
+                            continue
                         send_telegram(
                             f'[{LABEL}] 🗑 Stale pending replaced\n'
                             f'Old: {old["zone_bot"]}-{old["zone_top"]}'
                         )
                         account['pending'] = None
+                        save_state()
                     else:
                         send_telegram(
                             f'[{LABEL}] ⚠️ Pending active — skipping\n'
