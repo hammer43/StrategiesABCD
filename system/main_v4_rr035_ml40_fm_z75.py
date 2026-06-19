@@ -494,12 +494,12 @@ async def handler(event):
         if sl_match and open_trades:
             new_sl = float(sl_match.group(2))
             for trade in open_trades:
-                if trade['status'] == 'open' and new_sl > trade['sl']:
-                    # Cap at breakeven to protect our entry
-                    safe_sl = min(new_sl, trade['entry'] + 0.1)
-                    trade['sl'] = safe_sl
-                    save_trade(trade)
-                    print(f'SL moved to {safe_sl} for {trade["id"]}')
+                if trade['status'] == 'open':
+                    candidate = new_sl if new_sl >= trade['entry'] else round(trade['entry'] + 0.1, 2)
+                    if candidate > trade['sl']:
+                        trade['sl'] = candidate
+                        save_trade(trade)
+                        print(f'SL moved to {candidate} for {trade["id"]}')
             send_telegram(f'[{LABEL}] SL → breakeven {round(open_trades[0]["entry"]+0.1,2) if open_trades else new_sl}')
         return
 
