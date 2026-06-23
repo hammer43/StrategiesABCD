@@ -359,7 +359,7 @@ async def signal_processor():
         except Exception as e:
             print(f'Signal processor error: {e}')
 
-        await asyncio.sleep(5)
+        await asyncio.sleep(1)
 
 # ── PRICE MONITOR ────────────────────────────────────────
 async def price_monitor():
@@ -369,7 +369,7 @@ async def price_monitor():
         try:
             pdata = get_price()
             if not pdata or not pdata.get('price'):
-                await asyncio.sleep(5)
+                await asyncio.sleep(1)
                 continue
 
             price     = pdata['price']
@@ -560,7 +560,7 @@ async def price_monitor():
         except Exception as e:
             print(f'Price monitor error: {e}')
 
-        await asyncio.sleep(5)
+        await asyncio.sleep(1)
 
 # ── DAILY REPORT ─────────────────────────────────────────
 async def daily_report():
