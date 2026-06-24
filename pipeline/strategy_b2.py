@@ -326,6 +326,28 @@ async def signal_processor():
                     mark_processed(signal['time'])
                     continue
 
+                # 1m candle pre-entry validation
+                try:
+                    import json as _bj
+                    from datetime import datetime as _bdt, timezone as _btz, timedelta as _btd
+                    c1m = _bj.load(open("/root/gold-signals/pipeline/candles/1m.json"))
+                    st = _bdt.fromisoformat(signal["time"].replace("Z","+00:00"))
+                    rc = [c for c in c1m if _bdt.strptime(c["datetime"],"%Y-%m-%d %H:%M:%S").replace(tzinfo=_btz.utc) >= st - _btd(minutes=1)]
+                    if rc:
+                        if max(c["high"] for c in rc) >= signal.get("adj_tp1", signal.get("tp1", 9999)):
+                            processed_times.add(signal.get("time",""))
+                            save_processed()
+                            mark_processed(signal["time"])
+                            send_telegram(f"[{LABEL}] SKIP TP1 already hit on 1m candle")
+                            continue
+                        if min(c["low"] for c in rc) <= signal.get("adj_sl", signal.get("sl", 0)):
+                            processed_times.add(signal.get("time",""))
+                            save_processed()
+                            mark_processed(signal["time"])
+                            send_telegram(f"[{LABEL}] SKIP SL violated on 1m candle")
+                            continue
+                except Exception as _be:
+                    print(f"1m candle check error: {_be}")
                 # Set as pending
                 account['pending'] = signal
                 save_state()
@@ -359,7 +381,7 @@ async def signal_processor():
         except Exception as e:
             print(f'Signal processor error: {e}')
 
-        await asyncio.sleep(1)
+        await asyncio.sleep(0.5)
 
 # ── PRICE MONITOR ────────────────────────────────────────
 async def price_monitor():
@@ -369,7 +391,7 @@ async def price_monitor():
         try:
             pdata = get_price()
             if not pdata or not pdata.get('price'):
-                await asyncio.sleep(1)
+                await asyncio.sleep(0.5)
                 continue
 
             price     = pdata['price']
@@ -560,7 +582,7 @@ async def price_monitor():
         except Exception as e:
             print(f'Price monitor error: {e}')
 
-        await asyncio.sleep(1)
+        await asyncio.sleep(0.5)
 
 # ── DAILY REPORT ─────────────────────────────────────────
 async def daily_report():
